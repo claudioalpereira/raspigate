@@ -14,7 +14,14 @@ sudo apt-get update -y & sudo apt-get upgrade -y
 # fetching installation files
 sudo apt-get install -y git
 git clone https://github.com/claudioalpereira/raspigate.git
-sudo chmod -R -x ./raspigate
+sudo chmod -R 777 ./raspigate/*
+sudo chmod -R 777 ./raspigate/src/*
+sudo chmod -R 777 ./raspigate/src/ddns/*
+sudo chmod -R 777 ./raspigate/src/vpn/*
+sudo chmod -R 777 ./raspigate/src/http/*
+sudo chmod -R 777 ./raspigate/src/mqtt/*
+sudo chmod -R 777 ./raspigate/src/certs/*
+
 
 #./raspigate/src/http/install_http_server.sh
 
@@ -28,6 +35,7 @@ cd ./raspigate/src/mqtt
 cd ../../../
 
 # server_cert_config.cnf still has hardcoded values, but this will be gone in a future commit anyway
+# mkdir -p ./certs
 cd ./raspigate/src/certs/
 ./create_ca_cert.sh
 ./create_server_cert.sh

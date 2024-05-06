@@ -3,11 +3,14 @@
 #-- Certificate Authority
 #-------------------------------------------------
 
-mkdir -p ./certs
+# TODO: Implement 3 options
+#   1- CA with no password (this option)
+#   2- Accept the CA pass from the user (more secure, but cannot be completely unattended and the user MUST remember the pass)
+#   3- Store the CA on a pendrive. keep the pen removed from the raspberry and attach it only when the user need to create new certs
 
-#-- create key
-openssl genrsa -des3 -out ca.key 2048
-#(password= wek...)
-
-#-- create cert
-openssl req -x509 -newkey rsa:4096 -keyout ca.key -sha256 -days 3650 -nodes -out ca.crt -subj '/C=PT/ST=Lx/L=Mafra/O=${1}/OU=CA-department/CN=${1}/' -addext 'subjectAltName=DNS:${1}'
+sudo apt-get install -y easy-rsa
+make-cadir certs
+cd certs
+./easyrsa init-pki
+./easyrsa build-ca nopass
+cd ..
