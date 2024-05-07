@@ -22,9 +22,7 @@ sudo chmod -R 777 ./raspigate/src/http/*
 sudo chmod -R 777 ./raspigate/src/mqtt/*
 sudo chmod -R 777 ./raspigate/src/certs/*
 
-
 #./raspigate/src/http/install_http_server.sh
-
 
 cd ./raspigate/src/ddns
 ./setup_ddns.sh "$ddns_cron"
@@ -34,13 +32,12 @@ cd ./raspigate/src/mqtt
 ./install_mqtt.sh
 cd ../../../
 
-# server_cert_config.cnf still has hardcoded values, but this will be gone in a future commit anyway
 # mkdir -p ./certs
-cd ./raspigate/src/certs/
+cd ./raspigate/src/
 ./create_ca_cert.sh
 ./create_server_cert.sh
 ./create_client_cert.sh
-cd ../../../
+cd ../../
 
 cd ./raspigate/src/vpn
 echo "pivpnHOST=${custom_domain}" > ./pivpn_options.conf

@@ -5,5 +5,7 @@
 #-------------------------------------------------
 username="${1}"
 
+cd certs
 EASYRSA_REQ_CN="${username}" ./easyrsa --batch gen-req "${username}" nopass
 ./easyrsa sign-req client "${username}"
+cd ..

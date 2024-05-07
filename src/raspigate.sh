@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+
+
+
+# Before running this, there are two steps you need to do:
+#    1. Setup a static IP for the raspberry. (I recommend you do that on your router/DHCP server and leave the raspberry DHCP enabled)
+#    2. Create a custom subdomain. This example uses a subdomain from freedns.afraid.org 
+
+# Variables you should get 
+custom_domain="brunomld.chickenkiller.com"
+ddns_cron="4,9,14,19,24,29,34,39,44,49,54,59 * * * * sleep 35 ; wget --no-check-certificate -O - https://freedns.afraid.org/dynamic/update.php?aFROdDhSeU5oUWF3VHBsxptoYkdBYnY6MjAwOTE5OTU= >> /tmp/freedns_brunomld_chickenkiller_com.log 2>&1 &"
+
+
+
+add-cron(){
+  (crontab -l 2>/dev/null; echo "$1") | crontab -
+  echo ":::: Added cron job for DDNS"
+}
+
+install-mosquitto(){
+  echo ":::: Installing mosquitto"
+  sudo apt-get install -y mosquitto mosquitto-clients
+  curl -L https://raw.githubusercontent.com/claudioalpereira/raspigate/main/src/mqtt/my_mosquitto.conf -O --output-dir /etc/mosquitto/conf.d/
+  echo ":::: Mosquitto installed"
+}
+
+create-cert-ca(){
+  echo ":::: Installing easy-rsa..."
+  sudo apt-get install -y easy-rsa
+  make-cadir certs
+  cd certs
+
+  # set var to batch for unattended operations.
+  sudo sed -i "s/#set_var EASYRSA_BATCH.*/set_var EASYRSA_BATCH \"yes\" /" ./vars
+
+  ./easyrsa init-pki
+  echo ":::: Easy-rsa installed and configured."
+  echo ":::: Creating CA certificate..."
+  EASYRSA_REQ_CN=CA ./easyrsa --batch build-ca nopass
+  cd ..
+    echo ":::: CA cert created."
+}
+
+create-cert-server(){
+  echo ":::: Creating server certificate..."
+  cd certs
+  EASYRSA_REQ_CN="${1}" ./easyrsa --batch gen-req "${1}" nopass
+  ./easyrsa sign-req server "${1}"
+  cd ..
+  echo ":::: Created server certificate."
+}
+
+create-cert-client(){
+  echo ":::: Creating client cert..."
+  cd certs
+  EASYRSA_REQ_CN="${1}" ./easyrsa --batch gen-req "${1}" nopass
+  ./easyrsa sign-req client "${1}"
+  cd ..
+  echo ":::: Client certificate created. Now share these 3 files with the user: ca.crt ${1}.crt ${1}.key"
+}
+
+create-vpn(){
+  echo ":::: Creating VPN..."
+  curl -L https://install.pivpn.io > pivpn_install.sh
+  chmod +x pivpn_install.sh
+  curl -L https://raw.githubusercontent.com/claudioalpereira/raspigate/main/src/vpn/pivpn_options.conf -O
+./pivpn_install.sh --unattended pivpn_options.conf
+  echo ":::: VPN created."
+}
+
+create-http-server(){
+  echo ":::: create-http-server is not yet implemented"
+}
+
+install-all(){
+  # update
+  sudo apt-get update -y & sudo apt-get upgrade -y
+  add-cron ${ddns_cron}
+  install-mosquitto
+  create-cert-ca
+  create-cert-server "server"
+  create-cert-client "test-client"
+  
+  sudo cp ./certs/pki/ca.crt /etc/mosquitto/ca_certificates/
+  sudo cp ./certs/pki/issued/server.crt /etc/mosquitto/certs/
+  sudo cp ./certs/pki/private/server.key /etc/mosquitto/certs/
+  
+  sudo chown mosquitto:mosquitto /etc/mosquitto/certs/server.crt 
+  sudo chown mosquitto:mosquitto /etc/mosquitto/certs/server.key 
+  sudo chown mosquitto:mosquitto /etc/mosquitto/ca_certificates/ca.crt
+
+  sudo systemctl restart mosquitto
+
+  create-vpn
+}
+
+case "${1}" in install-all | create-cert-client | add-cron | install-mosquitto | install-http-server | create-cert-server| create-cert-ca | create-vpn )
+  "${@}"
+  ;;
+  *)
+  echo "Raspigate help"
+  echo "Use raspigate <option> <arg>"
+  echo "install - Installs everything"
+  echo "create_cert_client - Created a cleint certificate"
+  ;;
+esac
