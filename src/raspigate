@@ -75,7 +75,7 @@ install-all(){
   add-cron ${ddns_cron}
   install-mosquitto
   create-cert-ca
-  create-cert-server "${custom_domain}"
+  create-cert-server "server" "${custom_domain}"
   create-cert-client "test-client"
   
   sudo cp ./certs/pki/ca.crt /etc/mosquitto/ca_certificates/
