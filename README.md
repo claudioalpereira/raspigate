@@ -2,5 +2,5 @@
 
 ## Installation
 ``` bash
-curl -L https://raw.githubusercontent.com/claudioalpereira/raspigate/main/src/run.sh | bash
+sudo curl -L https://raw.githubusercontent.com/claudioalpereira/raspigate/main/src/raspigate | bash
 ```

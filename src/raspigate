@@ -88,6 +88,8 @@ install-all(){
   sudo systemctl restart mosquitto
 
   create-vpn
+  pivpn -a --name raspigate-admin
+  pivpn -qr raspigate-admin
 }
 
 case "${1}" in install-all | create-cert-client | add-cron | install-mosquitto | install-http-server | create-cert-server| create-cert-ca | create-vpn )
@@ -100,6 +102,6 @@ case "${1}" in install-all | create-cert-client | add-cron | install-mosquitto |
   echo "Raspigate help"
   echo "Use raspigate <option> <arg>"
   echo "install - Installs everything"
-  echo "create_cert_client - Created a cleint certificate"
+  echo "create_cert_client - Created a client certificate"
   ;;
 esac
