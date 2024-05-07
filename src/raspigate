@@ -40,7 +40,8 @@ create-cert-ca(){
 create-cert-server(){
   echo ":::: Creating server certificate..."
   cd certs
-  EASYRSA_REQ_CN="${1}" ./easyrsa --batch gen-req "${1}" nopass
+  EASYRSA_REQ_CN="${2}" ./easyrsa --batch gen-req "${1}" nopass
+  #EASYRSA_REQ_CN="${2}" ./easyrsa --batch --subject-alt-name="DNS:${2}" gen-req "${1}" nopass
   ./easyrsa sign-req server "${1}"
   cd ..
   echo ":::: Created server certificate."
@@ -74,7 +75,7 @@ install-all(){
   add-cron ${ddns_cron}
   install-mosquitto
   create-cert-ca
-  create-cert-server "server"
+  create-cert-server "${custom_domain}"
   create-cert-client "test-client"
   
   sudo cp ./certs/pki/ca.crt /etc/mosquitto/ca_certificates/
