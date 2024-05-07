@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-
-
 # Before running this, there are two steps you need to do:
 #    1. Setup a static IP for the raspberry. (I recommend you do that on your router/DHCP server and leave the raspberry DHCP enabled)
 #    2. Create a custom subdomain. This example uses a subdomain from freedns.afraid.org 
@@ -9,8 +7,6 @@
 # Variables you should get 
 custom_domain="brunomld.chickenkiller.com"
 ddns_cron="4,9,14,19,24,29,34,39,44,49,54,59 * * * * sleep 35 ; wget --no-check-certificate -O - https://freedns.afraid.org/dynamic/update.php?aFROdDhSeU5oUWF3VHBsxptoYkdBYnY6MjAwOTE5OTU= >> /tmp/freedns_brunomld_chickenkiller_com.log 2>&1 &"
-
-
 
 add-cron(){
   (crontab -l 2>/dev/null; echo "$1") | crontab -
@@ -20,7 +16,7 @@ add-cron(){
 install-mosquitto(){
   echo ":::: Installing mosquitto"
   sudo apt-get install -y mosquitto mosquitto-clients
-  curl -L https://raw.githubusercontent.com/claudioalpereira/raspigate/main/src/mqtt/my_mosquitto.conf -O --output-dir /etc/mosquitto/conf.d/
+  sudo curl -L https://raw.githubusercontent.com/claudioalpereira/raspigate/main/src/mqtt/my_mosquitto.conf -O --output-dir /etc/mosquitto/conf.d/
   echo ":::: Mosquitto installed"
 }
 
@@ -96,6 +92,9 @@ install-all(){
 
 case "${1}" in install-all | create-cert-client | add-cron | install-mosquitto | install-http-server | create-cert-server| create-cert-ca | create-vpn )
   "${@}"
+  ;;
+  "")
+  install-all
   ;;
   *)
   echo "Raspigate help"
